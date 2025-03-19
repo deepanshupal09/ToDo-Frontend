@@ -1,9 +1,10 @@
 export type TaskType = {
-  _id: string;
-  createdOn: Date;
+  id: string;
+  createdAt: string;
   priority: string;
   heading: string;
   content: string;
   completed: boolean;
-  deadline: Date;
+  deadline: string;
 };
+            

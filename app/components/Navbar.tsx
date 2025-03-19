@@ -39,9 +39,9 @@ function Navbar() {
 
   return (
     <div className="fixed bg-white z-50 flex flex-col items-center space-y-5 top-0 left-0 h-screen w-72 max-xl:w-60 border px-10 py-5 max-lg:px-3 max-xl:px-3 max-lg:h-20 max-lg:w-screen max-lg:flex-row max-lg:py-3 max-lg:space-y-1 max-lg:justify-between">
-      <div className="flex w-full font-medium text-xl max-lg:w-full">
+      <div className="flex w-full text-center font-medium text-xl max-lg:w-full">
         {/* <img src={logo.src} alt="logo" style={{ height: "40px" }} /> */}
-        ToDo dApp
+        Task Manager App
       </div>
       <div className="text-sm space-y-2 w-full  max-lg:hidden">
         {options.map((option, index) => {
@@ -93,8 +93,8 @@ function Navbar() {
       <Drawer size="md" variant="outlined" open={open} onClose={toggleDrawer(false)}>
         <div className="p-2">
           <div className="flex items-center my-3 font-medium text-xl max-lg:flex max-lg:items-center">
-            {/* <img src={logo.src} alt="logo" style={{ height: "40px" }} /> */}
-            <span className="ml-3">ToDo dApp</span>
+            {/* <img src={logo.src} alt="l  ogo" style={{ height: "40px" }} /> */}
+            <span className="ml-3">ToDo App</span>
           </div>
           <div className="text-sm space-y-3 mt-10">
             {options.map((option, index) => {

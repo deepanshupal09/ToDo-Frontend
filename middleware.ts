@@ -13,15 +13,12 @@ export default async function middleware(req: NextRequest) {
   const cookie = await validate(auth?.value);
 
   if (isProtectedRoute && !cookie) {
-    console.log("1");
     return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 
   if (isPublicRoute && cookie) {
-    console.log("2");
     return NextResponse.redirect(new URL("/home", req.nextUrl));
   }
-  console.log("3");
 
   return NextResponse.next();
 }

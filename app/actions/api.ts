@@ -4,16 +4,18 @@ import { TaskType } from "../(navbar)/home/types";
 
 export const login = async (email: string, password: string) => {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/api/user/login`, {
-      method: "GET",
+    const response = await fetch(`${process.env.BACKEND_URL}/api/auth/login`, {
+      method: "POST",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
-        email: email,
-        password: password,
       },
       cache: "no-cache",
-    });
+      body: JSON.stringify({
+        email: email,
+        password: password
+      }),
+    }); 
     const data = await response.json(); // Parse the JSON response
     return data;
   } catch (error) {
@@ -23,7 +25,7 @@ export const login = async (email: string, password: string) => {
 };
 export const signup = async (email: string, password: string, name: string) => {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/api/user/signup`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/auth/register`, {
       method: "POST",
       mode: "cors",
       headers: {
@@ -46,12 +48,12 @@ export const signup = async (email: string, password: string, name: string) => {
 };
 export const fetchTask = async (token: string) => {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/api/todo/fetchAllTasks`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/tasks/`, {
       method: "GET",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
-        token: token,
+        "Authorization": "Bearer " + token,
       },
       cache: "no-cache",
     });
@@ -62,14 +64,20 @@ export const fetchTask = async (token: string) => {
     throw error;
   }
 };
-export const addTask = async (token: string, task: TaskType) => {
+export const addTask = async (token: string, task: {
+  priority: string;
+  heading: string;
+  content: string;
+  deadline: Date;
+  completed?: boolean;
+}) => {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/api/todo/addTask`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/tasks/`, {
       method: "POST",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
-        token: token,
+        "Authorization": "Bearer " + token,
       },
       cache: "no-cache",
       body: JSON.stringify(task),
@@ -83,13 +91,12 @@ export const addTask = async (token: string, task: TaskType) => {
 };
 export const editTask = async (token: string, task: TaskType) => {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/api/todo/editTask`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/tasks/${task.id}`, {
       method: "PUT",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
-        token: token,
-        taskid: task._id
+        "Authorization": "Bearer " + token,
       },
       cache: "no-cache",
       body: JSON.stringify(task),
@@ -104,13 +111,12 @@ export const editTask = async (token: string, task: TaskType) => {
 
 export const deleteTask = async (token: string, taskId: string) => {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/api/todo/deleteTask`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/tasks/${taskId}`, {
       method: "DELETE",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
-        token: token,
-        taskid: taskId
+        "Authorization": "Bearer " + token,
       },
       cache: "no-cache",
     });

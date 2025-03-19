@@ -33,21 +33,23 @@ export default function Task({
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [del, setDel] = useState(false);
+  // Initialize newTask with the date fields as "YYYY-MM-DD" strings.
   const [newTask, setNewTask] = useState<{
-    _id: string;
+    id: string;
     heading: string;
     content: string;
     priority: string;
-    createdOn: string;
+    createdAt: string;
     deadline: string;
     completed: boolean;
   }>({
-    _id: task._id,
+    id: task.id,
     heading: task.heading,
     content: task.content,
     priority: task.priority,
-    createdOn: task.createdOn.toISOString().split("T")[0],
-    deadline: task.deadline.toISOString().split("T")[0],
+    createdAt: task.createdAt.split("T")[0],
+    deadline: task.deadline.split("T")[0],
     completed: task.completed,
   });
 
@@ -59,23 +61,24 @@ export default function Task({
     low: "text-green-500",
   };
 
+  // Handler for editing a task.
   const handleEdit = async () => {
     try {
-      console.log("editing");
-      const task: TaskType = {
-        _id: newTask._id,
-        createdOn: new Date(newTask.createdOn),
+      // console.log("editing ", newTask);
+      const updatedTask: TaskType = {
+        id: newTask.id,
+        createdAt: new Date(newTask.createdAt).toISOString(),
         priority: newTask.priority,
         heading: newTask.heading,
         content: newTask.content,
         completed: newTask.completed,
-        deadline: new Date(newTask.deadline),
+        deadline: new Date(newTask.deadline).toISOString(),
       };
 
       const token = await getAuth();
       if (token) {
         setLoading(true);
-        await editTask(token.value, task);
+        await editTask(token.value, updatedTask);
         setOpen(false);
         setLoading(false);
         setRefresh(!refresh);
@@ -87,21 +90,21 @@ export default function Task({
   };
   const handleCheckBox = async (completed: boolean) => {
     try {
-      console.log("editing");
-      const task: TaskType = {
-        _id: newTask._id,
-        createdOn: new Date(newTask.createdOn),
+
+      const updatedTask: TaskType = {
+        id: newTask.id,
+        createdAt: new Date(newTask.createdAt).toISOString(),
         priority: newTask.priority,
         heading: newTask.heading,
         content: newTask.content,
         completed: completed,
-        deadline: new Date(newTask.deadline),
+        deadline: new Date(newTask.deadline).toISOString(),
       };
 
       const token = await getAuth();
       if (token) {
         setLoading(true);
-        await editTask(token.value, task);
+        await editTask(token.value, updatedTask);
         setOpen(false);
         setLoading(false);
         setRefresh(!refresh);
@@ -112,25 +115,29 @@ export default function Task({
     }
   };
 
+  // Handler for deleting a task.
   const handleDelete = async () => {
     try {
       const token = await getAuth();
       if (token) {
         setLoading(true);
-        await deleteTask(token.value, task._id);
+        await deleteTask(token.value, task.id);
         setLoading(false);
+        setDel(false);
         setRefresh(!refresh);
       }
     } catch (error) {
+      // setDel(false);
       setLoading(false);
       console.error("Error deleting task: ", error);
     }
   };
+
   return (
     <>
       <div className="px-4 mt-4 w-full border py-4 rounded-xl cursor-pointer">
         <div className="flex justify-between">
-          <div className=" inline-flex gap-x-4">
+          <div className="inline-flex gap-x-4">
             <Checkbox
               onChange={(e) => {
                 handleCheckBox(e.target.checked);
@@ -138,28 +145,26 @@ export default function Task({
               checked={task.completed}
               color="danger"
             />
-            <div className=" font-bold">{task.heading}</div>
+            <div className="font-bold">{task.heading}</div>
           </div>
-          {!task.completed && (
-            <div>
-              <IconButton
-                onClick={() => {
-                  setOpen(true);
-                }}
-              >
-                <Edit fontSize="small" className="text-slate-400" />
-              </IconButton>
-              <IconButton onClick={handleDelete}>
-                <Delete fontSize="small" className="text-slate-400" />
-              </IconButton>
-            </div>
-          )}
+          <div>
+            <IconButton onClick={() => setOpen(true)}>
+              <Edit fontSize="small" className="text-slate-400" />
+            </IconButton>
+            <IconButton onClick={()=>{setDel(true)}}>
+              <Delete fontSize="small" className="text-slate-400" />
+            </IconButton>
+          </div>
         </div>
         <div className="px-10 text-slate-800">
           {task.content}
           <div className="flex text-xs justify-between mt-4">
-            <div className="capitalize">Priority: <span className={`${colors[task.priority]} font-medium`}>{task.priority}</span></div>
-            <div>Created On: {task.createdOn.toDateString()}</div>
+            <div className="capitalize">
+              Priority:{" "}
+              <span className={`${colors[task.priority]} font-medium`}>{task.priority}</span>
+            </div>
+            {/* Convert the ISO string to a Date for display */}
+            <div>Created On: {new Date(task.createdAt).toDateString()}</div>
           </div>
         </div>
       </div>
@@ -185,7 +190,6 @@ export default function Task({
                   onChange={(e) => setNewTask((prev) => ({ ...prev, heading: e.target.value }))}
                 />
               </FormControl>
-
               <FormControl>
                 <FormLabel>Content</FormLabel>
                 <Textarea
@@ -196,7 +200,6 @@ export default function Task({
                   onChange={(e) => setNewTask((prev) => ({ ...prev, content: e.target.value }))}
                 />
               </FormControl>
-
               <FormControl>
                 <FormLabel>Priority</FormLabel>
                 <RadioGroup
@@ -204,31 +207,11 @@ export default function Task({
                   defaultValue="medium"
                   value={newTask.priority}
                   onChange={(e) => setNewTask((prev) => ({ ...prev, priority: e.target.value }))}
-                  sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 3, // Add spacing between radio buttons
-                    alignItems: "center", // Ensures vertical alignment
-                  }}
+                  sx={{ display: "flex", flexDirection: "row", gap: 3, alignItems: "center" }}
                 >
-                  <Radio
-                    checkedIcon={<CheckCircle className="text-red-500" />}
-                    value="high"
-                    label="High"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  />
-                  <Radio
-                    checkedIcon={<CheckCircle className="text-blue-500" />}
-                    value="medium"
-                    label="Medium"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  />
-                  <Radio
-                    checkedIcon={<CheckCircle className="text-green-500" />}
-                    value="low"
-                    label="Low"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  />
+                  <Radio checkedIcon={<CheckCircle className="text-red-500" />} value="high" label="High" sx={{ display: "flex", alignItems: "center", gap: 1 }} />
+                  <Radio checkedIcon={<CheckCircle className="text-blue-500" />} value="medium" label="Medium" sx={{ display: "flex", alignItems: "center", gap: 1 }} />
+                  <Radio checkedIcon={<CheckCircle className="text-green-500" />} value="low" label="Low" sx={{ display: "flex", alignItems: "center", gap: 1 }} />
                 </RadioGroup>
               </FormControl>
               <FormControl>
@@ -251,6 +234,25 @@ export default function Task({
               </Button>
             </div>
           </form>
+        </ModalDialog>
+      </Modal>
+      <Modal open={del} onClose={() => setDel(false)}>
+        <ModalDialog aria-labelledby="add-task-title" aria-describedby="add-task-description" >
+          {/* <ModalClose /> */}
+
+
+            <Typography id="add-task-title" component="h2" className="font-semibold">
+              Delete Task
+            </Typography>
+            <Typography>Are you sure you want to <span className="font-bold">delete</span> this task?</Typography>
+            <div className="flex justify-end gap-x-3">
+              <Button variant="plain" onClick={() => setDel(false)} color="danger">
+                No
+              </Button>
+              <Button loading={loading} onClick={handleDelete} variant="solid" color="danger">
+                Yes
+              </Button>
+            </div>
         </ModalDialog>
       </Modal>
       <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
